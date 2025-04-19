@@ -4,19 +4,22 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 )
 
 func main() {
+	serverPort := getEnvOrSetDefault("SERVER_PORT", "8080")
+
 	messageHandler := &MessageHandler{}
 	s := &http.Server{
-		Addr:           ":8080",
+		Addr:           ":" + serverPort,
 		Handler:        messageHandler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Println("Server is running at http://localhost:8080")
+	fmt.Printf("Server is running at http://localhost:%s\n", serverPort)
 	log.Fatal(s.ListenAndServe())
 }
 
@@ -33,4 +36,14 @@ func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func getEnvOrSetDefault(key string, defaultValue string) string {
+	envValue := os.Getenv(key)
+
+	if envValue == "" {
+		envValue = defaultValue
+	}
+
+	return envValue
 }
