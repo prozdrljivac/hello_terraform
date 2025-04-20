@@ -25,8 +25,7 @@ func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to list messages", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		json.NewEncoder(w).Encode(messages)
+		writeJSON(w, http.StatusOK, messages)
 
 	case http.MethodPost:
 		text := r.FormValue("text")
@@ -39,11 +38,15 @@ func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, "Failed to store message", http.StatusInternalServerError)
 			return
 		}
-		w.Header().Set("Content-Type", "application/json")
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(msg)
+		writeJSON(w, http.StatusCreated, msg)
 
 	default:
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 	}
+}
+
+func writeJSON(w http.ResponseWriter, status int, data any) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	json.NewEncoder(w).Encode(data)
 }
