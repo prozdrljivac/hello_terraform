@@ -1,6 +1,7 @@
 package main
 
 import (
+	"api/hello_terraform/internal/config"
 	"context"
 	"fmt"
 	"log"
@@ -9,27 +10,18 @@ import (
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/joho/godotenv"
 )
 
 func main() {
-	err := godotenv.Load()
+	cfg, err := config.Load()
+
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatalf("Failed to load config: %v", err)
 	}
 
 	ctx := context.Background()
-	dsn := fmt.Sprintf(
-		"postgres://%s:%s@%s:%s/%s",
-		os.Getenv("DB_USER"),
-		os.Getenv("DB_PASSWORD"),
-		os.Getenv("DB_HOST"),
-		os.Getenv("DB_PORT"),
-		os.Getenv("DB_NAME"),
-	)
-	fmt.Println(dsn)
 
-	dbpool, err := pgxpool.New(ctx, dsn)
+	dbpool, err := pgxpool.New(ctx, cfg.DSN())
 	if err != nil {
 		log.Fatalf("Unable to create connection pool: %v\n", err)
 	}
@@ -43,17 +35,15 @@ func main() {
 
 	fmt.Println("Message from DB:", msg)
 
-	serverPort := getEnvOrSetDefault("SERVER_PORT", "8080")
-
 	messageHandler := &MessageHandler{}
 	s := &http.Server{
-		Addr:           ":" + serverPort,
+		Addr:           ":" + cfg.ServerPort,
 		Handler:        messageHandler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Printf("Server is running at http://localhost:%s\n", serverPort)
+	fmt.Printf("Server is running at http://localhost:%s\n", cfg.ServerPort)
 	log.Fatal(s.ListenAndServe())
 }
 
