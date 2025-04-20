@@ -3,7 +3,10 @@ APP_PATH=cmd/api-server/
 ENTRY=app.go
 BUILD_FILE_PATH=bin/
 
-run:
+run: swag
+	go run $(APP_PATH)$(ENTRY)
+
+dev:
 	go run $(APP_PATH)$(ENTRY)
 
 build:
@@ -14,3 +17,7 @@ test:
 
 clean:
 	rm -f $(BUILD_FILE_PATH)$(APP_NAME)
+
+swag:
+	go install github.com/swaggo/swag/cmd/swag@v1.7.9
+	swag init --generalInfo cmd/api-server/app.go --output ./docs --parseDependency
