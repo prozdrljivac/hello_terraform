@@ -1,73 +1,53 @@
 package main
 
 import (
-	"api/hello_terraform/internal/config"
 	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 	"time"
 
-	"github.com/jackc/pgx/v5/pgxpool"
+	"api/hello_terraform/internal/config"
+	"api/hello_terraform/internal/db"
+	"api/hello_terraform/internal/handler"
 )
 
 func main() {
-	cfg, err := config.Load()
+	ctx := context.Background()
 
+	cfg, err := config.Load()
 	if err != nil {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	ctx := context.Background()
-
-	dbpool, err := pgxpool.New(ctx, cfg.DSN())
+	dbpool, err := db.NewPostgresPool(ctx, cfg)
 	if err != nil {
-		log.Fatalf("Unable to create connection pool: %v\n", err)
+		log.Fatalf("Failed to connect to DB: %v", err)
 	}
 	defer dbpool.Close()
-
-	var msg string
-	err = dbpool.QueryRow(ctx, "SELECT 'Hello, world!'").Scan(&msg)
+	_, err = dbpool.Exec(ctx, `
+		CREATE TABLE IF NOT EXISTS messages (
+			id SERIAL PRIMARY KEY,
+			text TEXT NOT NULL
+		)
+	`)
 	if err != nil {
-		log.Fatalf("Query failed: %v\n", err)
+		log.Fatalf("Failed to create messages table: %v", err)
 	}
 
-	fmt.Println("Message from DB:", msg)
+	repo := db.NewPostgresMessageRepository(dbpool)
 
-	messageHandler := &MessageHandler{}
-	s := &http.Server{
-		Addr:           ":" + cfg.ServerPort,
-		Handler:        messageHandler,
+	handler := handler.NewMessageHandler(repo)
+
+	addr := ":" + cfg.ServerPort
+	srv := &http.Server{
+		Addr:           addr,
+		Handler:        handler,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-	fmt.Printf("Server is running at http://localhost:%s\n", cfg.ServerPort)
-	log.Fatal(s.ListenAndServe())
-}
 
-type MessageHandler struct{}
-
-func (h *MessageHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	switch r.Method {
-	case http.MethodGet:
-		w.WriteHeader(http.StatusOK)
-		fmt.Fprintln(w, "Returning list of messages (TODO)")
-	case http.MethodPost:
-		w.WriteHeader(http.StatusCreated)
-		fmt.Fprintln(w, "Storing message (TODO)")
-	default:
-		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
-	}
-}
-
-func getEnvOrSetDefault(key string, defaultValue string) string {
-	envValue := os.Getenv(key)
-
-	if envValue == "" {
-		envValue = defaultValue
-	}
-
-	return envValue
+	fmt.Printf("Server running at http://localhost%s\n", addr)
+	log.Fatal(srv.ListenAndServe())
 }

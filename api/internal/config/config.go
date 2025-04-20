@@ -20,7 +20,7 @@ func Load() (Config, error) {
 	err := godotenv.Load()
 
 	if err != nil {
-		return Config{}, err
+		return Config{}, fmt.Errorf("failed to load config %w", err)
 	}
 
 	cfg := Config{
