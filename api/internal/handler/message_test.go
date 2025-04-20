@@ -1,6 +1,7 @@
 package handler_test
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"net/http"
@@ -12,14 +13,21 @@ import (
 )
 
 type mockRepo struct {
-	ListFunc func(ctx context.Context) ([]model.Message, error)
+	ListFunc   func(ctx context.Context) ([]model.Message, error)
+	CreateFunc func(ctx context.Context, text string) (model.Message, error)
 }
 
 func (m *mockRepo) ListMessages(ctx context.Context) ([]model.Message, error) {
-	return m.ListFunc(ctx)
+	if m.ListFunc != nil {
+		return m.ListFunc(ctx)
+	}
+	return nil, nil
 }
 
 func (m *mockRepo) CreateMessage(ctx context.Context, text string) (model.Message, error) {
+	if m.CreateFunc != nil {
+		return m.CreateFunc(ctx, text)
+	}
 	return model.Message{}, nil
 }
 
@@ -68,5 +76,66 @@ func TestListMessages_ReturnsMessagesInJSON(t *testing.T) {
 
 	if len(result) != 2 || result[0].ID != 1 || result[0].Text != "Hello" || result[1].ID != 2 || result[1].Text != "World" {
 		t.Errorf("unexpected response data: %+v", result)
+	}
+}
+
+func TestCreateMessage_ReturnsStatusCreated(t *testing.T) {
+	repo := &mockRepo{
+		CreateFunc: func(ctx context.Context, text string) (model.Message, error) {
+			return model.Message{ID: 1, Text: text}, nil
+		},
+	}
+	h := handler.NewMessageHandler(repo)
+
+	body := []byte(`{"text": "Hello"}`)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	h.ServeHTTP(w, req)
+
+	if w.Code != http.StatusCreated {
+		t.Fatalf("expected status %d, got %d", http.StatusCreated, w.Code)
+	}
+}
+
+func TestCreateMessage_ReturnsCorrectJSON(t *testing.T) {
+	repo := &mockRepo{
+		CreateFunc: func(ctx context.Context, text string) (model.Message, error) {
+			return model.Message{ID: 1, Text: text}, nil
+		},
+	}
+	h := handler.NewMessageHandler(repo)
+
+	body := []byte(`{"text": "Hello"}`)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	h.ServeHTTP(w, req)
+
+	var msg model.Message
+	if err := json.NewDecoder(w.Body).Decode(&msg); err != nil {
+		t.Fatalf("failed to decode JSON response: %v", err)
+	}
+
+	if msg.ID != 1 || msg.Text != "Hello" {
+		t.Errorf("unexpected message response: %+v", msg)
+	}
+}
+
+func TestCreateMessage_ReturnsBadRequestForMissingText(t *testing.T) {
+	repo := &mockRepo{}
+	h := handler.NewMessageHandler(repo)
+
+	body := []byte(`{"no_text": "missing"}`)
+	req := httptest.NewRequest(http.MethodPost, "/", bytes.NewReader(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	h.ServeHTTP(w, req)
+
+	if w.Code != http.StatusBadRequest {
+		t.Fatalf("expected status %d, got %d", http.StatusBadRequest, w.Code)
 	}
 }
