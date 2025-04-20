@@ -1,3 +1,8 @@
+// @title           Hello Terraform API
+// @version         1.0
+// @description     This is a simple API to post and list messages
+// @host            localhost:8080
+// @BasePath        /
 package main
 
 import (
@@ -10,6 +15,10 @@ import (
 	"api/hello_terraform/internal/config"
 	"api/hello_terraform/internal/db"
 	"api/hello_terraform/internal/handler"
+
+	_ "api/hello_terraform/docs"
+
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 func main() {
@@ -36,18 +45,23 @@ func main() {
 	}
 
 	repo := db.NewPostgresMessageRepository(dbpool)
+	h := handler.NewMessageHandler(repo)
 
-	handler := handler.NewMessageHandler(repo)
+	mux := http.NewServeMux()
+	mux.Handle("/", h)
+	mux.Handle("/swagger/", httpSwagger.WrapHandler)
 
 	addr := ":" + cfg.ServerPort
 	srv := &http.Server{
 		Addr:           addr,
-		Handler:        handler,
+		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
 
 	fmt.Printf("Server running at http://localhost%s\n", addr)
+	fmt.Println("Swagger docs at http://localhost" + addr + "/swagger/index.html")
+
 	log.Fatal(srv.ListenAndServe())
 }

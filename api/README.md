@@ -2,7 +2,6 @@
 
 Todo:
 
-- Implement Swagger
 - Implement Testcontainers
 
 ## Setup
