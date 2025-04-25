@@ -1,1 +1,26 @@
-infra/terraform.tfvars
+########## INFRA ##########
+.terraform/
+
+# Terraform state
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.backup
+
+# Terraform variable files
+terraform.tfvars
+*.tfvars
+
+# Terraform plan files
+*.tfplan
+
+# Sensitive override files
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# Provider lock file - Should be committed when working in a group
+.terraform.lock.hcl
+
+########## INFRA ##########
