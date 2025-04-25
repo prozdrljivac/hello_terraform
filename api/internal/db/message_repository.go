@@ -3,7 +3,7 @@ package db
 import (
 	"context"
 
-	"api/hello_terraform/internal/model"
+	"github.com/prozdrljivac/hello_terraform/internal/model"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"api/hello_terraform/internal/config"
+	"github.com/prozdrljivac/hello_terraform/internal/config"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )

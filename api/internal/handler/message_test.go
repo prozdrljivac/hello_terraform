@@ -8,8 +8,8 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"api/hello_terraform/internal/handler"
-	"api/hello_terraform/internal/model"
+	"github.com/prozdrljivac/hello_terraform/internal/handler"
+	"github.com/prozdrljivac/hello_terraform/internal/model"
 )
 
 type mockRepo struct {

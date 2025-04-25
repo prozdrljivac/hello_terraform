@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"net/http"
 
-	"api/hello_terraform/internal/db"
-	"api/hello_terraform/internal/model"
+	"github.com/prozdrljivac/hello_terraform/internal/db"
+	"github.com/prozdrljivac/hello_terraform/internal/model"
 )
 
 var _ = model.Message{}

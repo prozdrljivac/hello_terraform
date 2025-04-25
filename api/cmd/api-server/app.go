@@ -12,11 +12,11 @@ import (
 	"net/http"
 	"time"
 
-	"api/hello_terraform/internal/config"
-	"api/hello_terraform/internal/db"
-	"api/hello_terraform/internal/handler"
+	"github.com/prozdrljivac/hello_terraform/internal/config"
+	"github.com/prozdrljivac/hello_terraform/internal/db"
+	"github.com/prozdrljivac/hello_terraform/internal/handler"
 
-	_ "api/hello_terraform/docs"
+	_ "github.com/prozdrljivac/hello_terraform/docs"
 
 	httpSwagger "github.com/swaggo/http-swagger"
 )

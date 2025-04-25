@@ -1,4 +1,4 @@
-module api/hello_terraform
+module github.com/prozdrljivac/hello_terraform
 
 go 1.23.3
 
