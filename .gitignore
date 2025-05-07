@@ -23,4 +23,5 @@ override.tf.json
 # Provider lock file - Should be committed when working in a group
 .terraform.lock.hcl
 
+hello-terraform-key.pem
 ########## INFRA ##########
