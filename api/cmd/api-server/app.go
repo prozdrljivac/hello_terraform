@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/prozdrljivac/hello_terraform/internal/config"
-	"github.com/prozdrljivac/hello_terraform/internal/db"
+	"github.com/prozdrljivac/hello_terraform/internal/db/filestorage"
 	"github.com/prozdrljivac/hello_terraform/internal/handler"
 
 	_ "github.com/prozdrljivac/hello_terraform/docs"
@@ -29,22 +29,13 @@ func main() {
 		log.Fatalf("Failed to load config: %v", err)
 	}
 
-	dbpool, err := db.NewPostgresPool(ctx, cfg)
+	file, err := filestorage.NewFileStorage(ctx, "dummy_db.json")
 	if err != nil {
-		log.Fatalf("Failed to connect to DB: %v", err)
+		log.Fatalf("failed to connect to file storage: %v", err)
 	}
-	defer dbpool.Close()
-	_, err = dbpool.Exec(ctx, `
-		CREATE TABLE IF NOT EXISTS messages (
-			id SERIAL PRIMARY KEY,
-			text TEXT NOT NULL
-		)
-	`)
-	if err != nil {
-		log.Fatalf("Failed to create messages table: %v", err)
-	}
+	defer file.Close()
 
-	repo := db.NewPostgresMessageRepository(dbpool)
+	repo := filestorage.NewFileStorageMessageRepository(file)
 	h := handler.NewMessageHandler(repo)
 
 	mux := http.NewServeMux()
