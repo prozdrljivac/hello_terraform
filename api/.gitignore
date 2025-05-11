@@ -1,6 +1,5 @@
 bin
 
 .env
-/docs
 
 dummy_db.json

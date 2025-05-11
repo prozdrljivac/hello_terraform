@@ -1,0 +1,75 @@
+basePath: /
+definitions:
+  github.com_prozdrljivac_hello_terraform_internal_handler.createMessageRequest:
+    properties:
+      text:
+        type: string
+    type: object
+  internal_handler.createMessageRequest:
+    properties:
+      text:
+        type: string
+    type: object
+  model.Message:
+    properties:
+      id:
+        type: integer
+      text:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: This is a simple API to post and list messages
+  title: Hello Terraform API
+  version: "1.0"
+paths:
+  /:
+    get:
+      description: Retrieve all stored messages
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/model.Message'
+            type: array
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: List messages
+      tags:
+      - messages
+    post:
+      consumes:
+      - application/json
+      description: Store a new message with text
+      parameters:
+      - description: Message payload
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/github.com_prozdrljivac_hello_terraform_internal_handler.createMessageRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/model.Message'
+        "400":
+          description: Missing or invalid 'text' field
+          schema:
+            type: string
+        "500":
+          description: Internal error
+          schema:
+            type: string
+      summary: Create a message
+      tags:
+      - messages
+swagger: "2.0"
