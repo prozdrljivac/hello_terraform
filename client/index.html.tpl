@@ -55,7 +55,7 @@
     const list = document.getElementById('message-list');
 
     async function fetchMessages() {
-      const res = await fetch('http://localhost:8080');
+      const res = await fetch("${api_url}");
       const data = await res.json();
       list.innerHTML = '';
       for (let i = data.length - 1; i >= 0; i--) {
@@ -69,7 +69,7 @@
       e.preventDefault();
       const text = input.value.trim();
       if (!text) return;
-      await fetch('http://localhost:8080', {
+      await fetch("${api_url}", {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ text }),
