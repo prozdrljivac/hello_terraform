@@ -45,8 +45,10 @@ resource "aws_s3_bucket_policy" "static_site_policy" {
 }
 
 resource "aws_s3_object" "static_website" {
-  bucket       = aws_s3_bucket.static_site_bucket.id
-  key          = "index.html"
-  source       = var.index_file_path
+  bucket = aws_s3_bucket.static_site_bucket.id
+  key    = "index.html"
+  content = templatefile("${path.module}/../../../client/index.html.tpl", {
+    api_url = "http://${var.api_public_dns}:8080"
+  })
   content_type = "text/html"
 }

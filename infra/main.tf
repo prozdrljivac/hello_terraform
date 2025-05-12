@@ -16,12 +16,13 @@ data "aws_subnet" "default" {
   id = tolist(data.aws_subnets.default.ids)[0]
 }
 module "s3_static_site" {
-  source = "./modules/s3"
-
+  source          = "./modules/s3"
   bucket_name     = var.bucket_name
   environment     = var.environment
-  index_file_path = var.index_file_path
+  index_file_path = "" # not used anymore
+  api_public_dns  = module.ec2_backend.instance_public_dns
 }
+
 module "ec2_backend" {
   source      = "./modules/ec2"
   environment = var.environment
