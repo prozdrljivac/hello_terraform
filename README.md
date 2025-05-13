@@ -2,15 +2,6 @@
 
 Project devoted to learning Terraform as part of our third Upskilling session.
 
-Agenda:
-
-- Build Simple API
-  - POST Message
-  - GET List of Messsages
-- Build Simple Client
-  - Form for POSTING a Messgage
-  - Form for Listing Messages
-
 ## What is IAC
 
 IAC(Infrastructure as Code) is practice of managing and provisioning infrastructure using code, rather than through manual process.
