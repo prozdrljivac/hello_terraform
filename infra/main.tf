@@ -3,17 +3,15 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 6.0.0"
+      version = "~> 5.96.0"
     }
   }
 }
 
-# Discover default VPC
 data "aws_vpc" "default" {
   default = true
 }
 
-# Use first public subnet in the default VPC
 data "aws_subnets" "default" {
   filter {
     name   = "vpc-id"
@@ -23,16 +21,15 @@ data "aws_subnets" "default" {
 data "aws_subnet" "default" {
   id = tolist(data.aws_subnets.default.ids)[0]
 }
-module "s3_static_site" {
-  source          = "./modules/s3"
-  bucket_name     = var.bucket_name
-  environment     = var.environment
-  index_file_path = "" # not used anymore
-  api_public_dns  = module.ec2_backend.instance_public_dns
+module "static_website" {
+  source         = "./modules/static_website"
+  bucket_name    = var.bucket_name
+  environment    = var.environment
+  api_public_dns = module.api_server.instance_public_dns
 }
 
-module "ec2_backend" {
-  source      = "./modules/ec2"
+module "api_server" {
+  source      = "./modules/api_server"
   environment = var.environment
   vpc_id      = data.aws_vpc.default.id
   subnet_id   = data.aws_subnet.default.id
